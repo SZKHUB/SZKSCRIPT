@@ -799,35 +799,6 @@ function SZK:CreateWindow(config)
 	CloseBtn.MouseEnter:Connect(function() closeHover(true) end)
 	CloseBtn.MouseLeave:Connect(function() closeHover(false) end)
 
-	local function MakeDividerLine(parent, size_, pos)
-		local l = Instance.new("Frame")
-		l.Size = size_
-		l.Position = pos
-		l.BackgroundColor3 = Theme.Accent
-		l.BorderSizePixel = 0
-		l.ZIndex = 3
-		l.Parent = parent
-		local g = Instance.new("UIGradient")
-		g.Transparency = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, 1),
-			NumberSequenceKeypoint.new(0.5, 0),
-			NumberSequenceKeypoint.new(1, 1),
-		})
-		g.Parent = l
-		return l
-	end
-
-	local HeaderLine = MakeDividerLine(MainFrame, UDim2.new(1, -40, 0, 1), UDim2.new(0, 20, 0, 58))
-
-	local HeaderDiamond = Instance.new("Frame")
-	HeaderDiamond.Size = UDim2.fromOffset(7, 7)
-	HeaderDiamond.Position = UDim2.new(0.5, -3, 0, 55)
-	HeaderDiamond.BackgroundColor3 = Theme.Accent
-	HeaderDiamond.BorderSizePixel = 0
-	HeaderDiamond.Rotation = 45
-	HeaderDiamond.ZIndex = 4
-	HeaderDiamond.Parent = MainFrame
-
 	local SIDE_W, TOP_H, FOOT_H, SIDE_PAD_TOP = 168, 62, 12, 8
 
 	local SideBg = Instance.new("Frame")
@@ -1154,8 +1125,6 @@ function SZK:CreateWindow(config)
 		tp(MinBtn, "BackgroundColor3", T.ElementBackground)
 		tp(CloseBtn, "BackgroundColor3", T.ElementBackground)
 		for _, b in ipairs(closeBars) do tp(b, "BackgroundColor3", T.Placeholder) end
-		tp(HeaderLine, "BackgroundColor3", T.Accent)
-		tp(HeaderDiamond, "BackgroundColor3", T.Accent)
 		tp(SideBg, "BackgroundColor3", T.Background)
 		tp(PageHost, "BackgroundColor3", T.Background)
 		tp(ThemePopup, "BackgroundColor3", T.ElementBackground)
