@@ -859,22 +859,6 @@ function SZK:CreateWindow(config)
 	SidePad.PaddingBottom = UDim.new(0, 8)
 	SidePad.Parent = Sidebar
 
-	local VLine = Instance.new("Frame")
-	VLine.Size = UDim2.new(0, 1, 1, -(TOP_H + FOOT_H + 16))
-	VLine.Position = UDim2.new(0, SIDE_W, 0, TOP_H + 8)
-	VLine.BackgroundColor3 = Theme.Outline
-	VLine.BorderSizePixel = 0
-	VLine.ZIndex = 2
-	VLine.Parent = MainFrame
-	local VLineGrad = Instance.new("UIGradient")
-	VLineGrad.Rotation = 90
-	VLineGrad.Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 1),
-		NumberSequenceKeypoint.new(0.5, 0.2),
-		NumberSequenceKeypoint.new(1, 1),
-	})
-	VLineGrad.Parent = VLine
-
 	local PageHost = Instance.new("Frame")
 	PageHost.Position = UDim2.new(0, SIDE_W + 1, 0, TOP_H)
 	PageHost.Size = UDim2.new(1, -(SIDE_W + 1), 1, -(TOP_H + FOOT_H))
@@ -908,15 +892,41 @@ function SZK:CreateWindow(config)
 	ThemeList.Padding = UDim.new(0, 4)
 	ThemeList.Parent = ThemeScroll
 
+	------------------------------------------------------------------
+	-- BOTÓN FLOTANTE REDISEÑADO (sombra + gradiente + escala hover) --
+	------------------------------------------------------------------
+
+	local FloatShadow = Instance.new("Frame")
+	FloatShadow.Name = "MainButtonShadow"
+	FloatShadow.AnchorPoint = Vector2.new(0.5, 0)
+	FloatShadow.Size = UDim2.fromOffset(160, 38)
+	FloatShadow.Position = UDim2.new(0.5, 0, 0, 18)
+	FloatShadow.BackgroundColor3 = Theme.Accent
+	FloatShadow.BackgroundTransparency = 0.75
+	FloatShadow.BorderSizePixel = 0
+	FloatShadow.Visible = false
+	FloatShadow.ZIndex = 9
+	FloatShadow.Parent = WindowGui
+	Round(14, FloatShadow)
+	local FloatShadowGrad = Instance.new("UIGradient")
+	FloatShadowGrad.Rotation = 90
+	FloatShadowGrad.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	FloatShadowGrad.Parent = FloatShadow
+	local FloatShadowScale = Instance.new("UIScale")
+	FloatShadowScale.Parent = FloatShadow
+
 	local FloatBtn = Instance.new("TextButton")
 	FloatBtn.Name = "MainButton"
 	FloatBtn.AnchorPoint = Vector2.new(0.5, 0)
-	FloatBtn.Size = UDim2.fromOffset(140, 34)
-	FloatBtn.Position = UDim2.new(0.5, 0, 0, 12)
+	FloatBtn.Size = UDim2.fromOffset(160, 38)
+	FloatBtn.Position = UDim2.new(0.5, 0, 0, 14)
 	FloatBtn.BackgroundColor3 = Theme.Accent
-	FloatBtn.Text = openButtonText
+	FloatBtn.Text = string.upper(openButtonText)
 	FloatBtn.TextColor3 = ContrastText(Theme.Accent)
-	FloatBtn.Font = Enum.Font.GothamBlack
+	FloatBtn.Font = FONT_BOLD
 	FloatBtn.TextSize = 12
 	FloatBtn.AutoButtonColor = false
 	FloatBtn.BorderSizePixel = 0
@@ -924,16 +934,40 @@ function SZK:CreateWindow(config)
 	FloatBtn.Visible = false
 	FloatBtn.ZIndex = 10
 	FloatBtn.Parent = WindowGui
-	Round(10, FloatBtn)
-	local FloatStroke = Outline(FloatBtn, Theme.Outline, 1, 0.6)
+	Round(14, FloatBtn)
+	local FloatStroke = Outline(FloatBtn, Theme.Outline, 1, 0.5)
+
+	local FloatGrad = Instance.new("UIGradient")
+	FloatGrad.Rotation = 90
+	FloatGrad.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
+		ColorSequenceKeypoint.new(0.5, Color3.new(0.92, 0.92, 0.92)),
+		ColorSequenceKeypoint.new(1, Color3.new(0.72, 0.72, 0.72)),
+	})
+	FloatGrad.Parent = FloatBtn
+
+	local FloatScale = Instance.new("UIScale")
+	FloatScale.Parent = FloatBtn
+
+	-- Sincronizar posición de la sombra con el botón (drag / resize)
+	FloatBtn:GetPropertyChangedSignal("Position"):Connect(function()
+		FloatShadow.Position = UDim2.new(
+			FloatBtn.Position.X.Scale, FloatBtn.Position.X.Offset,
+			FloatBtn.Position.Y.Scale, FloatBtn.Position.Y.Offset + 4
+		)
+	end)
 
 	FloatBtn.MouseEnter:Connect(function()
-		Tween(FloatBtn, 0.12, { BackgroundColor3 = Shade(Theme.Accent, 0.12) })
-		Tween(FloatStroke, 0.12, { Transparency = 0.3 })
+		TweenService:Create(FloatScale, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Scale = 1.06}):Play()
+		TweenService:Create(FloatShadowScale, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Scale = 1.06}):Play()
+		TweenService:Create(FloatStroke, TweenInfo.new(0.18), {Transparency = 0.15}):Play()
+		TweenService:Create(FloatShadow, TweenInfo.new(0.18), {BackgroundTransparency = 0.55}):Play()
 	end)
 	FloatBtn.MouseLeave:Connect(function()
-		Tween(FloatBtn, 0.12, { BackgroundColor3 = Theme.Accent })
-		Tween(FloatStroke, 0.12, { Transparency = 0.6 })
+		TweenService:Create(FloatScale, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Scale = 1}):Play()
+		TweenService:Create(FloatShadowScale, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Scale = 1}):Play()
+		TweenService:Create(FloatStroke, TweenInfo.new(0.18), {Transparency = 0.5}):Play()
+		TweenService:Create(FloatShadow, TweenInfo.new(0.18), {BackgroundTransparency = 0.75}):Play()
 	end)
 
 	local winOpen = true
@@ -943,6 +977,7 @@ function SZK:CreateWindow(config)
 		if isAnimating then return end
 		isAnimating = true
 		FloatBtn.Visible = false
+		FloatShadow.Visible = false
 		MainFrame.Visible = true
 		local targetScale = WindowScale.Scale
 		WindowScale.Scale = targetScale * 0.94
@@ -962,6 +997,7 @@ function SZK:CreateWindow(config)
 		t.Completed:Connect(function()
 			MainFrame.Visible = false
 			FloatBtn.Visible = true
+			FloatShadow.Visible = true
 			isAnimating = false
 		end)
 		winOpen = false
@@ -1120,7 +1156,6 @@ function SZK:CreateWindow(config)
 		for _, b in ipairs(closeBars) do tp(b, "BackgroundColor3", T.Placeholder) end
 		tp(HeaderLine, "BackgroundColor3", T.Accent)
 		tp(HeaderDiamond, "BackgroundColor3", T.Accent)
-		tp(VLine, "BackgroundColor3", T.Outline)
 		tp(SideBg, "BackgroundColor3", T.Background)
 		tp(PageHost, "BackgroundColor3", T.Background)
 		tp(ThemePopup, "BackgroundColor3", T.ElementBackground)
@@ -1133,6 +1168,7 @@ function SZK:CreateWindow(config)
 		tp(FloatBtn, "BackgroundColor3", T.Accent)
 		tp(FloatBtn, "TextColor3", ContrastText(T.Accent))
 		tp(FloatStroke, "Color", T.Outline)
+		tp(FloatShadow, "BackgroundColor3", T.Accent)
 
 		for _, item in ipairs(Registered) do
 			if item.Type == "TabBtn" then
@@ -1251,7 +1287,7 @@ function SZK:CreateWindow(config)
 	end
 
 	function Window:SetOpenButtonText(text)
-		FloatBtn.Text = tostring(text or "OPEN SZK")
+		FloatBtn.Text = string.upper(tostring(text or "OPEN SZK"))
 	end
 
 	function Window:SetTitle(text)
@@ -1264,6 +1300,7 @@ function SZK:CreateWindow(config)
 
 	function Window:SetButtonVisible(v)
 		FloatBtn.Visible = v and true or false
+		FloatShadow.Visible = v and true or false
 	end
 
 	function Window:SetTheme(name) UpdateTheme(name, true) end
